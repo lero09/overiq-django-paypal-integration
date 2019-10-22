@@ -9,14 +9,15 @@ from .models import Product, Order, LineItem
 from .forms import CartForm, CheckoutForm
 from . import cart
 
+
 # Create your views here.
 
 
 def index(request):
     all_products = Product.objects.all()
     return render(request, "ecommerce_app/index.html", {
-                                    'all_products': all_products,
-                                    })
+        'all_products': all_products,
+    })
 
 
 def show_product(request, product_id, product_slug):
@@ -31,13 +32,12 @@ def show_product(request, product_id, product_slug):
 
     form = CartForm(request, initial={'product_id': product.id})
     return render(request, 'ecommerce_app/product_detail.html', {
-                                            'product': product,
-                                            'form': form,
-                                            })
+        'product': product,
+        'form': form,
+    })
 
 
 def show_cart(request):
-
     if request.method == 'POST':
         if request.POST.get('submit') == 'Update':
             cart.update_item(request)
@@ -47,9 +47,9 @@ def show_cart(request):
     cart_items = cart.get_all_cart_items(request)
     cart_subtotal = cart.subtotal(request)
     return render(request, 'ecommerce_app/cart.html', {
-                                            'cart_items': cart_items,
-                                            'cart_subtotal': cart_subtotal,
-                                            })
+        'cart_items': cart_items,
+        'cart_subtotal': cart_subtotal,
+    })
 
 
 def checkout(request):
@@ -58,35 +58,29 @@ def checkout(request):
         if form.is_valid():
             cleaned_data = form.cleaned_data
             o = Order(
-                name = cleaned_data.get('name'),
-                email = cleaned_data.get('email'),
-                postal_code = cleaned_data.get('postal_code'),
-                address = cleaned_data.get('address'),
+                name=cleaned_data.get('name'),
+                email=cleaned_data.get('email'),
+                postal_code=cleaned_data.get('postal_code'),
+                address=cleaned_data.get('address'),
             )
             o.save()
-
             all_items = cart.get_all_cart_items(request)
             for cart_item in all_items:
                 li = LineItem(
-                    product_id = cart_item.product_id,
-                    price = cart_item.price,
-                    quantity = cart_item.quantity,
-                    order_id = o.id
+                    product_id=cart_item.product_id,
+                    price=cart_item.price,
+                    quantity=cart_item.quantity,
+                    order_id=o.id
                 )
-
                 li.save()
-
             cart.clear(request)
-
             request.session['order_id'] = o.id
-
-            messages.add_message(request, messages.INFO, 'Order Placed!')
-            return redirect('checkout')
-
-
+            # messages.add_message(request, messages.INFO, 'Order Placed!')
+            return redirect('process_payment')
     else:
         form = CheckoutForm()
-        return render(request, 'ecommerce_app/checkout.html', {'form': form})
+        # return render(request, 'ecommerce_app/checkout.html', {'form': form})
+        return render(request, 'ecommerce_app/checkout.html', locals())
 
 
 def process_payment(request):
