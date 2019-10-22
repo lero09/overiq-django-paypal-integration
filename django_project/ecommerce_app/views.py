@@ -31,7 +31,7 @@ def show_product(request, product_id, product_slug):
             return redirect('show_cart')
 
     form = CartForm(request, initial={'product_id': product.id})
-    return render(request, 'ecommerce_app/product_detail.html', {
+    return render(request, 'ecommerce_app/product-detail.html', {
         'product': product,
         'form': form,
     })
@@ -90,7 +90,8 @@ def process_payment(request):
 
     paypal_dict = {
         'business': settings.PAYPAL_RECEIVER_EMAIL,
-        'amount': '%.2f' % order.total_cost().quantize(Decimal('.01')),
+        # 'amount': '%.2f' % order.total_cost().quantize(Decimal('.01')),
+        'amount': '%.2f' % Decimal(order.total_cost()).quantize(Decimal('.01')),
         'item_name': 'Order {}'.format(order.id),
         'invoice': str(order.id),
         'currency_code': 'USD',
@@ -100,14 +101,14 @@ def process_payment(request):
     }
 
     form = PayPalPaymentsForm(initial=paypal_dict)
-    return render(request, 'ecommerce_app/process_payment.html', {'order': order, 'form': form})
+    return render(request, 'ecommerce_app/process-payment.html', {'order': order, 'form': form})
 
 
 @csrf_exempt
 def payment_done(request):
-    return render(request, 'ecommerce_app/payment_done.html')
+    return render(request, 'ecommerce_app/payment-done.html')
 
 
 @csrf_exempt
 def payment_canceled(request):
-    return render(request, 'ecommerce_app/payment_cancelled.html')
+    return render(request, 'ecommerce_app/payment-cancelled.html')
